@@ -1,0 +1,397 @@
+E-commerce database:
+
+db["products"].find()
+use ecommercePlatform
+switched to db ecommercePlatform
+db.createCollection("customers")
+{ ok: 1 }
+db.createCollection("orders")
+{ ok: 1 }
+db.createCollection("reviews")
+{ ok: 1 }
+db.products.insertMany([{_id: 1, name: "Laptop", category : "Electronics", price : "999", inStock: true},{_id : 2, name : "Smarthphone", category : "Electronics", price : 599, inStock: false},{_id : 3, name : "Desk", category : "Furniture", price : 1999, inStock : true}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': 1,
+    '1': 2,
+    '2': 3
+  }
+}
+db.customers.insertMany([{_id : 101 , name : "Alice", email : "alice@example.com"},{_id : 102, name: "Bob", email : "bob@example.com"}, {_id : 103, name : "Charlie", email : "charlie@example.com"}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': 101,
+    '1': 102,
+    '2': 103
+  }
+}
+db.orders.insertMany([{_id:1, productId : 1, quantity : 2, customerId : 101, orderDate : "2025-01-15"},{_id : 2, productId: 2, quantity : 1, customerId : 102, orderDate : "2025-02-10"},{_id : 3, productId: 3, quantity : 1, customerId : 101 , orderDate : "2025-02-15"}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': 1,
+    '1': 2,
+    '2': 3
+  }
+}
+db.reviews.insertMany([{_id : 1, productId : 1, customerId : 101, rating : 5, comment : "Excellent laptop!"},{_id : 2, productId : 2, customerId : 103, rating : 4, comment : "Good smarthphone with nice features. "}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': 1,
+    '1': 2
+  }
+}
+db.reviews.insertOne({_id : 3, productId : 3, customerId: 101, rating : 3, comment : "Decent desk but could be sturdier"})
+{
+  acknowledged: true,
+  insertedId: 3
+}
+db.orders.aggregate([
+  {
+    $lookup: {
+      from: "customers",
+      localField: "customerId",
+      foreignField: "_id",
+      as: "customerDetails",
+    },
+  }
+]);
+{
+  _id: 1,
+  productId: 1,
+  quantity: 2,
+  customerId: 101,
+  orderDate: '2025-01-15',
+  customerDetails: [
+    {
+      _id: 101,
+      name: 'Alice',
+      email: 'alice@example.com'
+    }
+  ]
+}
+{
+  _id: 2,
+  productId: 2,
+  quantity: 1,
+  customerId: 102,
+  orderDate: '2025-02-10',
+  customerDetails: [
+    {
+      _id: 102,
+      name: 'Bob',
+      email: 'bob@example.com'
+    }
+  ]
+}
+{
+  _id: 3,
+  productId: 3,
+  quantity: 1,
+  customerId: 101,
+  orderDate: '2025-02-15',
+  customerDetails: [
+    {
+      _id: 101,
+      name: 'Alice',
+      email: 'alice@example.com'
+    }
+  ]
+}
+
+db.reviews.aggregate([
+  {
+    $lookup: {
+      from: "products",
+      localField: "productId",
+      foreignField: "_id",
+      as: "productDetails",
+    },
+  }
+]);
+{
+  _id: 1,
+  productId: 1,
+  customerId: 101,
+  rating: 5,
+  comment: 'Excellent laptop!',
+  productDetails: [
+    {
+      _id: 1,
+      name: 'Laptop',
+      category: 'Electronics',
+      price: '999',
+      inStock: true
+    }
+  ]
+}
+{
+  _id: 2,
+  productId: 2,
+  customerId: 103,
+  rating: 4,
+  comment: 'Good smarthphone with nice features. ',
+  productDetails: [
+    {
+      _id: 2,
+      name: 'Smarthphone',
+      category: 'Electronics',
+      price: 599,
+      inStock: false
+    }
+  ]
+}
+{
+  _id: 3,
+  productId: 3,
+  customerId: 101,
+  rating: 3,
+  comment: 'Decent desk but could be sturdier',
+  productDetails: [
+    {
+      _id: 3,
+      name: 'Desk',
+      category: 'Furniture',
+      price: 1999,
+      inStock: true
+    }
+  ]
+}
+db.customers.find({
+  email: {
+    $regex: "example.com$", 
+  },
+});
+{
+  _id: 101,
+  name: 'Alice',
+  email: 'alice@example.com'
+}
+{
+  _id: 102,
+  name: 'Bob',
+  email: 'bob@example.com'
+}
+{
+  _id: 103,
+  name: 'Charlie',
+  email: 'charlie@example.com'
+}
+db.products.find({
+  category: "Electronics",
+  inStock: true,
+});
+{
+  _id: 1,
+  name: 'Laptop',
+  category: 'Electronics',
+  price: '999',
+  inStock: true
+}
+db.products.find({
+  $or: [
+    { category: "Electronics" },
+    { price: { $lt: 200 } },
+  ],
+});
+{
+  _id: 1,
+  name: 'Laptop',
+  category: 'Electronics',
+  price: '999',
+  inStock: true
+}
+{
+  _id: 2,
+  name: 'Smarthphone',
+  category: 'Electronics',
+  price: 599,
+  inStock: false
+}
+
+
+db.products.updateOne( { _id : 2 }, { $set: {price : 199} })
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db.products.find({
+  $or: [
+    { category: "Electronics" },
+    { price: { $lt: 200 } },
+  ],
+});
+{
+  _id: 1,
+  name: 'Laptop',
+  category: 'Electronics',
+  price: '999',
+  inStock: true
+}
+{
+  _id: 2,
+  name: 'Smarthphone',
+  category: 'Electronics',
+  price: 199,
+  inStock: false
+}
+
+
+db.products.updateOne( { _id : 3 }, { $set: {price : 199} })
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db.products.updateOne( { _id : 2 }, { $set: {price : 599} })
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+db.products.find({
+  $or: [
+    { category: "Electronics" },
+    { price: { $lt: 200 } },
+  ],
+});
+{
+  _id: 1,
+  name: 'Laptop',
+  category: 'Electronics',
+  price: '999',
+  inStock: true
+}
+{
+  _id: 2,
+  name: 'Smarthphone',
+  category: 'Electronics',
+  price: 599,
+  inStock: false
+}
+{
+  _id: 3,
+  name: 'Desk',
+  category: 'Furniture',
+  price: 199,
+  inStock: true
+}
+
+
+db.orders.aggregate([
+  {
+    $match: {
+      orderDate: { $gte: "2025-01-15" }, // Example: Orders after February 1, 2025
+    },
+  },
+  {
+    $group: {
+      _id: "$customerId",
+      totalQuantity: { $sum: "$quantity" },
+    },
+  },
+]);
+{
+  _id: 102,
+  totalQuantity: 1
+}
+{
+  _id: 101,
+  totalQuantity: 3
+}
+db.orders.aggregate([
+  {
+    $match: {
+      orderDate: { $gte: "2025-01-15" }, // Example: Orders after February 1, 2025
+    },
+  },
+  {
+    $group: {
+      _id: "$customerId",
+      totalQuantity: { $sum: "$quantity" },
+    },
+  },
+  {
+    $lookup: {
+      from: "customers",
+      localField: "_id",
+      foreignField: "_id",
+      as: "customerDetails",
+    },
+  }
+]);
+{
+  _id: 101,
+  totalQuantity: 3,
+  customerDetails: [
+    {
+      _id: 101,
+      name: 'Alice',
+      email: 'alice@example.com'
+    }
+  ]
+}
+{
+  _id: 102,
+  totalQuantity: 1,
+  customerDetails: [
+    {
+      _id: 102,
+      name: 'Bob',
+      email: 'bob@example.com'
+    }
+  ]
+}
+db.reviews.aggregate([
+  {
+    $group: {
+      _id: "$productId",
+      averageRating: { $avg: "$rating" },
+    },
+  },
+  {
+    $sort: {
+      averageRating: -1, 
+    },
+  },
+  {
+    $limit: 3,
+  },
+]);
+{
+  _id: 1,
+  averageRating: 5
+}
+{
+  _id: 2,
+  averageRating: 4
+}
+{
+  _id: 3,
+  averageRating: 3
+}
+db.reviews.find({
+  comment: {
+    $regex: "Excellent",
+  },
+});
+{
+  _id: 1,
+  productId: 1,
+  customerId: 101,
+  rating: 5,
+  comment: 'Excellent laptop!'
+}
+
+
+
