@@ -394,4 +394,8 @@ db.reviews.find({
 }
 
 
+https://github.com/marianajbb/firstProject/blob/main/E-commerce%20database.txt
+
+
+
 
